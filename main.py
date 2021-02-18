@@ -7,15 +7,17 @@ lib = {
     'SEPARATORS': ['()', '(', ')', '{', '}', '[', ']', ',', '.', ':', ';']
 }
 
+
 test2 = []
 if __name__ == "__main__":
     with open('testFile.txt') as file:
         line = file.readline()
         while line:
+            line = re.sub('//.*?\n|/\*.*?\*/', '', line, flags=re.S)
             test = re.findall(
-                r"[\w']+|[.,!?;]+|[\(\)\{\}\[\]]+|[+-=/<>%]", line)
+                r"[\w']+|[.,!?;]+|[\(\)\{\}\[\]]+|[+-=<>%]", line)
             test2.append(test)
-            print(test)
+            # print(test)
             line = file.readline()
 
 print(test2)
@@ -31,5 +33,3 @@ for items in test2:
             print(f"SEPARATORS: {i}")
         else:
             print(f"IDENTIFIER: {i}")
-
-
