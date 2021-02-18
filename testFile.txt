@@ -1,7 +1,10 @@
-int main()
+! Find the largest value between two numbers!
+int num1, num2$, large_num ;
+if(num1 > num2$)
 {
-  // 2 variables
-  int a, b;
-  a = 10.5;
- return 0;
+	large_num = num1;
+}
+else
+{
+	large_num = num2$;
 }
