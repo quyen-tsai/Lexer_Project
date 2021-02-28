@@ -1,5 +1,8 @@
 import re
 
+def print_format(data, output):
+    print("%-15s %-15s %s" % (data, "=", output))
+
 def isfloat(value):
     try:
         float(value)
@@ -11,17 +14,17 @@ def identify_type(test2):
     for items in test2:
         for i in items:
             if i.isdigit():
-                print(f"INT: {i}")
+                print("%-15s %-15s %s" % ('INT', "=", i))
             elif isfloat(i):
-                print(f"REAL: {i}")
+                print("%-15s %-15s %s" % ('REAL', "=", i))
             elif i in lib['OPERATOR']:
-                print(f"OPERATOR: {i}")
+                print("%-15s %-15s %s" % ('OPERATOR', "=", i))
             elif i in lib['KEYWORDS']:
-                print(f"KEYWORDS: {i}")
+                print("%-15s %-15s %s" % ('KEYWORDS', "=", i))
             elif i in lib['SEPARATORS']:
-                print(f"SEPARATORS: {i}")
+                print("%-15s %-15s %s" % ('SEPARATOR', "=", i))
             else:
-                print(f"IDENTIFIER: {i}")
+                print("%-15s %-15s %s" % ('IDENTIFIER', "=", i))
 
 lib = {
     'OPERATOR': ['+', '-', '*', '/', '=', '>', '<', '%'],
@@ -42,6 +45,8 @@ if __name__ == "__main__":
             test2.append(test)
             # print(test)
             line = file.readline()
+    print("%-15s %-15s %s" % ('TOKEN', " ", 'LEXEMES'))
+    print(' ')
     identify_type(test2)
 
 
