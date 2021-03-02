@@ -1,6 +1,6 @@
 ! Find the largest value between two numbers!
-int num1, num2$, large_num ;
-float test = 5.92
+int num1, num2$, large_num;
+float test = 5.62
 if(num1 > num2$)
 {
 	large_num = num1;
