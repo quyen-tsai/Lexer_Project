@@ -1,4 +1,7 @@
 import re
+import sys
+
+
 
 def isfloat(value): #check to see if variable is a float type
     try:
@@ -55,6 +58,9 @@ lib = {
 
 if __name__ == "__main__":
     filename = input("Please enter File path:")
+    orig_stdout = sys.stdout
+    f = open('output.txt', 'w')
+    sys.stdout = f
     with open(filename) as file:
         line = file.readline()
         temp = ''
@@ -157,3 +163,6 @@ if __name__ == "__main__":
                         identify_typeCT(char, temp)
                         temp = ''
             line = file.readline()
+    sys.stdout = orig_stdout
+    f.close()
+    file.close()
