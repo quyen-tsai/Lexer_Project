@@ -226,24 +226,6 @@ vec2 = []
 vec3 = []
 
 
-def syntaxAnalysis(vec):
-    for x in vec:
-        if x == ' ':
-            continue
-        if x in lib3['id']:
-            print(f"Token: Identifier     Lexemes: {x}")
-        elif x in lib3['Key']:
-            print(f"Token: Keyword     Lexemes: {x}")
-        elif x in lib3['OP']:
-            print(f"Token: Operator     Lexemes: {x}")
-        elif x in lib3['SE']:
-            print(f"Token: Separator     Lexemes: {x}")
-        elif x in lib3['INT']:
-            print(f"Token: Digit integer     Lexemes: {x}")
-        elif x in lib3['FLOAT']:
-            print(f"Token: Digit Float     Lexemes: {x}")
-
-
 def vec_mod():
     t = []
     o = 0
@@ -260,7 +242,7 @@ def vec_mod():
                 t.append(vec[0:i])
                 hodl = i
         else:
-            o = copy(x,i)
+            o = copy(x, i)
             if o != 0:
                 i = o
                 t.append(vec[hodl:i])
@@ -268,6 +250,49 @@ def vec_mod():
     return t
 
 
+def statement(a_switch, x, i, x_switch, line):
+    if x[i] == 'int' or x[i] == 'float' or x[i] == 'bool':
+        print(f"Token: Keyword      Lexemes: {x[i]}")
+        print("<Statement> -> <Declarative>")
+        Declarative(x[i])
+        return a_switch, x_switch
+    elif a_switch == 0:
+        if x[i] in lib3['id']:
+            print(f"Token: Identifier     Lexemes: {x[i]}")
+        print("<Statement> -> <Assign>")
+        assign(x, i, a_switch, x_switch,line)
+        a_switch += 1
+        return a_switch, x_switch
+    elif x[i] == '=':
+        print(f"Token:Separator     Lexemes: {x[i]}")
+        return a_switch, x_switch
+    else:
+        a_switch, x_switch = assign(x, i, a_switch, x_switch,line)
+        return a_switch, x_switch
+
+
+def assign(x, i, a_switch, x_switch,line):
+    temp = 0
+    if a_switch == 0:
+        print("<Assign> -> <Identifier> = <Expression>")
+    else:
+        temp = expression(i, x, x_switch, a_switch,line)
+    return int(a_switch), int(temp)
+
+def Declarative(x):
+    print("<Declarative> -> <Type> <ID>")
+    Type(x)
+
+def Type(x):
+    if x == 'int':
+        print("<Type> -> int")
+        return
+    elif x == 'bool':
+        print("<Type> -> bool")
+        return
+    elif x == 'float':
+        print("<Type> -> float")
+        return
 
 def copy(x, o):
     i = o
@@ -280,11 +305,192 @@ def copy(x, o):
     return 0
 
 
+def expression_prime(x):
+    if x == '+':
+        print("<Expression Prime> -> +<Term><Expression Prime>")
+    elif x == '-':
+        print("<Expression Prime> -> -<Term><Expression Prime>")
+    elif x == ';':
+        print("<Expression Prime> -> E")
+    return 0
+
+
+def term(x):
+    print("<Term> -> <Factor><Term Prime>")
+    if x != '+' and x != '-' and x != '*' and x != '/' and x != ';':
+        factor(x)
+    elif x == '*' or x == '/' or x == '+' or x == '-':
+        term_prime(x)
+    return 0
+
+
+def term_prime(x):
+    if x == "*":
+        print("<Term prime> -> *<Factor><Term prime>")
+    elif x == "/":
+        print("<Term prime> -> /<Factor><Term prime>")
+    elif x in lib['OPERATOR'] or x in lib['SEPARATORS']:
+        print("<Term Prime> -> E")
+
+
+def factor(x):
+    if x in lib3['id']:
+        print("<Factor> -> <Identifier>")
+    elif x.isdigit():
+        print("<Factor> -> <Num>")
+    elif x == '(' or x == ')':
+        print("<Factor> -> ( <Expression> )")
+    return 0
+
+
+def ID(x):
+    return 0
+
+
+def expression(i, x, x_switch, a_switch, line):
+    if x[i] in lib3['id'] and a_switch != 0:
+        print(f"Token: Identifier     Lexemes: {x[i]}")
+    elif x[i] in lib3['Key']:
+        print(f"Token: Keyword     Lexemes: {x[i]}")
+    elif x[i] in lib3['OP']:
+        print(f"Token: Operator     Lexemes: {x[i]}")
+    elif x[i] in lib3['SE']:
+        print(f"Token: Separator     Lexemes: {x[i]}")
+    elif x[i] in lib3['INT']:
+        print(f"Token: Digit integer     Lexemes: {x[i]}")
+    elif x[i] in lib3['FLOAT']:
+        print(f"Token: Digit Float     Lexemes: {x[i]}")
+    if x[i] == '=':
+        return x_switch
+    if x_switch == 0 and x[i] != '(' and x[i] != ')' and x[i] != '+' and x[i] != '-' and x[i] != '*' and x[i] != '/' and x[i] != ';':
+        x_switch += 1
+        print("<Expression> -> <Term><Expression Prime>")
+        term(x[i])
+        return x_switch
+    else:
+        if x[i] == '+' or x[i] == '-':
+            if i == len(x) -1:
+                print(f"Syntax Error, no Identifier following operator on line {line}")
+                return -1
+            elif x[i+1] not in lib3['id']  and i < len(x):
+                if x[i+1] == '(':
+                    if ')' not in x:
+                        print(f"Missing closing Parentheses on line {line}")
+                        return -1
+                    else:
+                        count = 0
+                        for k in range(x.index('('),x.index(')')):
+                            if x[k] in lib3['id']:
+                                count += 1
+                        if count == 0:
+                            print(f"Uncomputable code on line {line}")
+                            return -1
+                    term_prime(x[i])
+                    expression_prime(x[i])
+                    x_switch = 0
+                else:
+                    print(f"Syntax error, cannot compute code on line {line}")
+                    return -1
+            else:
+                term_prime(x[i])
+                expression_prime(x[i])
+        elif x[i] == ';':
+            if i == len(x) -1:
+                term_prime(x[i])
+                expression_prime(x[i])
+            else:
+                print(f"Syntax Error on line {line}")
+                return -1
+        elif x[i] == '*' or x[i] == '/':
+            if i == len(x) -1:
+                print(f"Syntax Error, no Identifier following operator on line {line}")
+                return -1
+            elif x[i+1] not in lib3['id'] and i < len(x):
+                print(f"Syntax error, cannot compute code on line {line}")
+                return -1
+            term(x[i])
+        else:
+            term(x[i])
+    return x_switch
+
+
+def syntaxAnalysis2(vec3):
+    line = 1
+    orig_stdout = sys.stdout
+    f2 = open('Syntax_analysis.txt', 'w')
+    sys.stdout = f2
+    for x in vec3:
+        if not x:
+            line += 1
+        x_switch = 0
+        a_switch = 0
+        for i in range(len(x)):
+            if ('int' in x or 'float' in x or 'bool' in x) and ('=' in x):
+                if len(x) < 2:
+                    print(f"Syntax Error on line {line}")
+                    return None
+                a_switch, x_switch = statement(a_switch, x, i, x_switch,line)
+                if x_switch == -1:
+                    return None
+                print(" ")
+            elif ('int' in x or 'float' in x or 'bool' in x) and ('=' not in x):
+                if len(x) < 2:
+                    print(f"Syntax Error on line {line}")
+                    return None
+                a_switch, x_switch = statement(a_switch, x, i, x_switch, line)
+                if x_switch == -1:
+                    return None
+                print(" ")
+            elif '=' in x:
+                if len(x) < 3:
+                    print(f"Syntax Error on line {line}: missing assignment for variable {x[i]}")
+                    return None
+                a_switch, x_switch = statement(a_switch, x, i, x_switch,line)
+                if x_switch == -1:
+                    return None
+                print(" ")
+            else:
+                if(len(x) < 2):
+                    print(f"Syntax Error on line {line}: un-executable code")
+                    return None
+                if x[i] == '(':
+                    if ')' not in x:
+                        print(f"Missing closing Parentheses on line {line}")
+                        return None
+                    elif len(x) <3:
+                        print(f"Syntax Error: un-executable expression on line {line}")
+                        return None
+                    else:
+                        count = 0
+                        for k in x:
+                            if k in lib3['id']:
+                                count+=1
+                        if count <= 1:
+                            print(f"Uncomputable code on line {line}")
+                            return None
+                        a_switch = 1
+                        x_switch = 0
+                        x_switch = expression(i, x, x_switch, a_switch,line)
+                        if x_switch == -1:
+                            return None
+                        print(" ")
+                else:
+                    a_switch = 1
+                    x_switch = expression(i, x, x_switch, a_switch,line)
+                    if x_switch == -1:
+                        return None
+                    print(" ")
+
+        line +=1
+    print("Code Compile Successfully")
+    sys.stdout = orig_stdout
+    f2.close()
+
 
 if __name__ == "__main__":
-    # filename = input("Please enter File path:")
-    filename = 'testFile.txt'
+    filename = input("Please enter File path:")
+    #filename = 'testFile.txt'
     lexar(filename)
     vec3 = vec_mod()
-    print (vec3)
-    syntaxAnalysis(vec)
+    print(vec3)
+    syntaxAnalysis2(vec3)
