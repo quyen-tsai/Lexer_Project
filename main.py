@@ -493,6 +493,9 @@ def syntaxAnalysis2(vec3):
 lib4 = {}
 memory_add = 5000
 def simp_table(vec3,memory_add):
+    orig_stdout = sys.stdout
+    f2 = open('Syntax_analysis.txt', 'w')
+    sys.stdout = f2
     line = 0
     ide = ""
     clear = True
@@ -506,10 +509,12 @@ def simp_table(vec3,memory_add):
             count = 0
             for i in range(len(x)):
                 t = x[i]
+                if x[i] == ';' and i+1 == len(x):
+                    break
                 if (x[i] in lib['SEPARATORS'] or x[i] in lib['OPERATOR']) and i+1 == len(x):
                     print(f'Syntax error on line {line} no identifier following {x[i]}')
                     return False
-                elif (x[i] in lib['SEPARATORS'] or x[i] in lib['OPERATOR']) and x[i+1] not in lib3['id']:
+                elif (x[i] in lib['SEPARATORS'] or x[i] in lib['OPERATOR']) and x[i+1] not in lib3['id'] :
                     print(f'Syntax error on line {line} no identifier following {x[i]}')
                     return False
             for i in x:
@@ -530,6 +535,8 @@ def simp_table(vec3,memory_add):
                     print(f"{i} was not declared in this scope on line {line}")
                     return False
         line+=1
+    sys.stdout = orig_stdout
+    f2.close()
     print("Symbol Table")
     print("%-15s %-15s %s" % ('Identifier', "MemoryLocation", 'Type'))
     for x in lib4:
