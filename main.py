@@ -97,6 +97,10 @@ lib = {
     'SEPARATORS': ['()', '(', ')', '{', '}', '[', ']', ',', ':', ';']
 }
 
+lib5 = {
+    'Type':['int', 'float', 'bool', 'real', 'double']
+}
+
 lib3 = {
     'id': [],
     'Key': [],
@@ -111,7 +115,7 @@ vec = []
 
 def lexar(filename):
     orig_stdout = sys.stdout
-    f = open('output.txt', 'w')
+    f = open('Lexical_analysis.txt', 'w')
     sys.stdout = f
     with open(filename) as file:
         line = file.readline()
@@ -486,11 +490,63 @@ def syntaxAnalysis2(vec3):
     sys.stdout = orig_stdout
     f2.close()
 
+lib4 = {}
+memory_add = 5000
+def simp_table(vec3,memory_add):
+    line = 0
+    ide = ""
+    clear = True
+    for x in vec3:
+        test = x[0]
+        if x[0] in lib3['Key'] and x[0] in lib5['Type']:
+            if len(x) < 2:
+                print(f"Missing identifier after data type {x[0]} on line {line}")
+                return False
+            ide = x[0]
+            count = 0
+            for i in range(len(x)):
+                t = x[i]
+                if (x[i] in lib['SEPARATORS'] or x[i] in lib['OPERATOR']) and i+1 == len(x):
+                    print(f'Syntax error on line {line} no identifier following {x[i]}')
+                    return False
+                elif (x[i] in lib['SEPARATORS'] or x[i] in lib['OPERATOR']) and x[i+1] not in lib3['id']:
+                    print(f'Syntax error on line {line} no identifier following {x[i]}')
+                    return False
+            for i in x:
+                if i in lib3['Key'] and count > 0:
+                    print(f"Syntax error on line {line}!")
+                    return False
+                if i == ide:
+                    pass
+                elif i not in lib['OPERATOR'] and i not in lib['SEPARATORS'] and i not in lib4:
+                    lib4[i] = ide
+                elif i in lib4:
+                    print(f"{i} already exist on line {line}! Can't initialize same identifier twice!")
+                    return False
+                count+=1
+        elif x[0] not in lib3['Key']:
+            for i in x:
+                if i not in lib4:
+                    print(f"{i} was not declared in this scope on line {line}")
+                    return False
+        line+=1
+    print("Symbol Table")
+    print("%-15s %-15s %s" % ('Identifier', "MemoryLocation", 'Type'))
+    for x in lib4:
+        print("%-15s %-15s %s" % (x, str(memory_add), lib4[x]))
+        memory_add += 1
+    return True
 
 if __name__ == "__main__":
-    filename = input("Please enter File path:")
-    #filename = 'testFile.txt'
+    #filename = input("Please enter File path:")
+    filename = 'testFile.txt'
     lexar(filename)
     vec3 = vec_mod()
-    print(vec3)
-    syntaxAnalysis2(vec3)
+    print(lib3)
+    clear = simp_table(vec3,memory_add)
+
+    if(clear):
+        syntaxAnalysis2(vec3)
+
+
+
