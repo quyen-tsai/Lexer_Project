@@ -17,7 +17,7 @@ the operator or punc. would be included in the temp string to be output to scree
 
 
 def identify_typeCT(char, temp):
-    if temp.isdigit() and char not in lib2['ct'] and temp != ' ' and temp != '' and char not in lib2['op']:
+    if temp.isdigit() or char.isdigit() and char not in lib2['ct'] and temp != ' ' and temp != '' and char not in lib2['op']:
         vec.append(temp)
         print("%-15s %-15s %s" % ('INT', "=", temp))
         if temp not in lib3['INT']:
@@ -92,13 +92,13 @@ lib2 = {
 # Library to reference operator, Keywords and separators
 lib = {
     'OPERATOR': ['+', '-', '*', '/', '=', '>', '<', '%'],
-    'KEYWORDS': ['int', 'float', 'real', 'bool', 'True', 'False', 'if', 'else', 'then', 'endif', 'endelse',
+    'KEYWORDS': ['int', 'float', 'real', 'boolean', 'True', 'False', 'true','false', 'if', 'else', 'then', 'endif', 'endelse',
                  'while', 'whileend', 'do', 'enddo', 'for', 'endfor', 'STDinput', 'STDoutput', 'and', 'or', 'not'],
     'SEPARATORS': ['()', '(', ')', '{', '}', '[', ']', ',', ':', ';']
 }
 
 lib5 = {
-    'Type':['int', 'float', 'bool', 'real', 'double']
+    'Type':['int', 'float', 'boolean', 'real', 'double']
 }
 
 lib3 = {
@@ -366,12 +366,14 @@ def expression(i, x, x_switch, a_switch, line):
         print(f"Token: Digit Float     Lexemes: {x[i]}")
     if x[i] == '=':
         return x_switch
-    if x_switch == 0 and x[i] != '(' and x[i] != ')' and x[i] != '+' and x[i] != '-' and x[i] != '*' and x[i] != '/' and x[i] != ';':
+    elif x_switch == 0 and x[i] != '(' and x[i] != ')' and x[i] != '+' and x[i] != '-' and x[i] != '*' and x[i] != '/' and x[i] != ';' and x[i] not in lib3['SE']:
         x_switch += 1
         print("<Expression> -> <Term><Expression Prime>")
         term(x[i])
         return x_switch
     else:
+        if x[i].isdigit():
+            term(x[i])
         if x[i] == '+' or x[i] == '-':
             if i == len(x) -1:
                 print(f"Syntax Error, no Identifier following operator on line {line}")
@@ -392,6 +394,8 @@ def expression(i, x, x_switch, a_switch, line):
                     term_prime(x[i])
                     expression_prime(x[i])
                     x_switch = 0
+                elif x[i+1].isdigit():
+                    term(x[i])
                 else:
                     print(f"Syntax error, cannot compute code on line {line}")
                     return -1
@@ -454,7 +458,7 @@ def syntaxAnalysis2(vec3):
                     return None
                 print(" ")
             else:
-                if(len(x) < 2):
+                if(len(x) < 1):
                     print(f"Syntax Error on line {line}: un-executable code")
                     return None
                 if x[i] == '(':
@@ -496,11 +500,17 @@ def simp_table(vec3,memory_add):
     orig_stdout = sys.stdout
     f2 = open('Syntax_analysis.txt', 'w')
     sys.stdout = f2
-    line = 0
+    line = 1
     ide = ""
     clear = True
     for x in vec3:
-        test = x[0]
+        if not x:
+            continue
+        elif len(x) < 1:
+            print(f"Error on line {line}, invalid syntax")
+            return False
+        elif x[0] == '{' or x[0] == '}'or x[0] == 'if'or x[0] == 'else'or x[0] == 'endif':
+            continue
         if x[0] in lib3['Key'] and x[0] in lib5['Type']:
             if len(x) < 2:
                 print(f"Missing identifier after data type {x[0]} on line {line}")
@@ -515,13 +525,23 @@ def simp_table(vec3,memory_add):
                     print(f'Syntax error on line {line} no identifier following {x[i]}')
                     return False
                 elif (x[i] in lib['SEPARATORS'] or x[i] in lib['OPERATOR']) and x[i+1] not in lib3['id'] :
-                    print(f'Syntax error on line {line} no identifier following {x[i]}')
-                    return False
+                    if x[i].isdigit:
+                        pass
+                    else:
+                        print(f'Syntax error on line {line} no identifier following {x[i]}')
+                        return False
             for i in x:
-                if i in lib3['Key'] and count > 0:
+                if i.isdigit():
+                    pass;
+                elif i == '=':
+                    for j in range(x.index(i), len(x)):
+                        if x[j] not in lib4 and x[j] not in lib['OPERATOR'] and x[j] not in lib['SEPARATORS'] and not x[j].isdigit():
+                            print(f"Syntax error on line {line}, '{x[j]}' was not declared in this scope")
+                            return False
+                elif i in lib3['Key'] and count > 0:
                     print(f"Syntax error on line {line}!")
                     return False
-                if i == ide:
+                elif i == ide:
                     pass
                 elif i not in lib['OPERATOR'] and i not in lib['SEPARATORS'] and i not in lib4:
                     lib4[i] = ide
@@ -531,9 +551,13 @@ def simp_table(vec3,memory_add):
                 count+=1
         elif x[0] not in lib3['Key']:
             for i in x:
-                if i not in lib4:
-                    print(f"{i} was not declared in this scope on line {line}")
-                    return False
+                if i not in lib4 and i not in lib3['SE'] and i not in lib3['OP'] and not i.isdigit():
+                    if i == 'true' or i == 'false' or i == 'True' or i == 'False':
+                        pass
+                    else:
+                        print(f"{i} was not declared in this scope on line {line}")
+                        return False
+
         line+=1
     sys.stdout = orig_stdout
     f2.close()
@@ -550,6 +574,7 @@ if __name__ == "__main__":
     lexar(filename)
     vec3 = vec_mod()
     print(lib3)
+    print(vec3)
     clear = simp_table(vec3,memory_add)
 
     if(clear):
