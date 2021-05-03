@@ -568,6 +568,69 @@ def simp_table(vec3,memory_add):
         memory_add += 1
     return True
 
+parsingTable1 = ['+','-','id','$']
+parsingTable2 = [
+    ['>','<','<','>'],
+    ['>','>','<','>'],
+    ['>','>','ER','>'],
+    ['<','<','<','ER'],
+]
+
+
+def syntaxAnalysis3(vec3):
+    line = 1
+    #orig_stdout = sys.stdout
+    #f2 = open('Syntax_analysis.txt', 'w')
+    #sys.stdout = f2
+    terminal = ['E', 'EPrime', 'T', 'TPrime', 'F', 'S', 'A', 'D', 'Ty']
+    for x in vec3:
+        if not x:
+            line += 1
+        x.append('$')
+        i = 0
+        stack = []
+        stack.insert(0, '$')
+        while not(stack[0] == '$' and x[i] == '$'):
+            if(stack[0] in lib3['id']):
+                t = parsingTable1.index('id')
+            else:
+                t = parsingTable1.index(stack[0])
+            if not x:
+                pass
+            elif(x[i] in lib3['id']):
+                s = parsingTable1.index('id')
+            elif (x[i] == '+'):
+                s = parsingTable1.index('+')
+            elif (x[i] == '-'):
+                s = parsingTable1.index('-')
+            elif (x[i] == '$') or (x[i] in terminal):
+                s = parsingTable1.index('$')
+            entry = parsingTable2[t][s]
+
+            if(entry == 'ER'):
+                print(f'Error with Syntax{line}')
+                return None
+            elif(entry == '>'):
+                checkRule = ""
+                while True:
+                    char = stack.pop(0)
+                    if char == '<':
+                        break
+                    else:
+                        checkRule += char
+                syntaxCheck(stack, checkRule)
+            else:
+                if '<' not in stack:
+                    stack.insert(len(stack) - 2, entry)
+                    stack.insert(0, x[i])
+                else:
+                    stack.insert(0, entry)
+                    stack.insert(0, x[i])
+                i += 1
+
+def syntaxCheck(stack, checkRule):
+    pass
+
 if __name__ == "__main__":
     #filename = input("Please enter File path:")
     filename = 'testFile.txt'
@@ -578,7 +641,7 @@ if __name__ == "__main__":
     clear = simp_table(vec3,memory_add)
 
     if(clear):
-        syntaxAnalysis2(vec3)
+        syntaxAnalysis3(vec3)
 
 
 
