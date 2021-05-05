@@ -532,7 +532,7 @@ def simp_table(vec3,memory_add):
                         return False
             for i in x:
                 if i.isdigit():
-                    pass;
+                    pass
                 elif i == '=':
                     for j in range(x.index(i), len(x)):
                         if x[j] not in lib4 and x[j] not in lib['OPERATOR'] and x[j] not in lib['SEPARATORS'] and not x[j].isdigit():
@@ -568,12 +568,15 @@ def simp_table(vec3,memory_add):
         memory_add += 1
     return True
 
-parsingTable1 = ['+','-','id','$']
+parsingTable1 = ['+','*','-','=','id', 'Key','$']
 parsingTable2 = [
-    ['>','<','<','>'],
-    ['>','>','<','>'],
-    ['>','>','ER','>'],
-    ['<','<','<','ER'],
+    ['>','<','>','ER','<','ER','>'],
+    ['>','>','>','ER','<','ER','>'],
+    ['>','<','>','ER','<','ER','>'],
+    ['>','>','>','>','>','ER','ER'],
+    ['>','>','>','>','ER','ER','>'],
+    ['ER','ER','ER','ER','>','ER','ER'],
+    ['<','<','<','<','<','<','ER'],
 ]
 
 
@@ -593,6 +596,8 @@ def syntaxAnalysis3(vec3):
         while not(stack[0] == '$' and x[i] == '$'):
             if(stack[0] in lib3['id']):
                 t = parsingTable1.index('id')
+            elif (stack[0] in lib3['Key']):
+                t = parsingTable1.index('Key')
             else:
                 t = parsingTable1.index(stack[0])
             if not x:
@@ -603,6 +608,12 @@ def syntaxAnalysis3(vec3):
                 s = parsingTable1.index('+')
             elif (x[i] == '-'):
                 s = parsingTable1.index('-')
+            elif (x[i] == '*'):
+                s = parsingTable1.index('*')
+            elif (x[i] == '='):
+                s = parsingTable1.index('=')
+            elif (x[i] in lib3['Key']):
+                s = parsingTable1.index('Key')
             elif (x[i] == '$') or (x[i] in terminal):
                 s = parsingTable1.index('$')
             entry = parsingTable2[t][s]
