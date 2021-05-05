@@ -2,3 +2,8 @@ TOKEN:                          LEXEMES:
  
 KEYWORDS        =               int
 IDENTIFIER      =               a
+KEYWORDS        =               int
+IDENTIFIER      =               b
+IDENTIFIER      =               a
+OPERATOR        =               +
+IDENTIFIER      =               b

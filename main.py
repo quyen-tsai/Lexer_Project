@@ -579,6 +579,20 @@ parsingTable2 = [
     ['<','<','<','<','<','<','ER'],
 ]
 
+errorCodes = []
+
+def printError(error,line):
+    if error == 'E1':
+        print(f"Syntax Error on line {line}")
+    elif error == 'E2':
+        print(f"Syntax Error on line {line}: missing assignment for variable =")
+    elif error == 'E3':
+        print(f"Syntax Error on line {line}: un-executable code")
+    elif error == 'E4':
+        print(f"Missing closing Parentheses on line {line}")
+    elif error == 'E5':
+        print(f"Uncomputable code on line {line}")
+    
 
 def syntaxAnalysis3(vec3):
     line = 1
@@ -620,6 +634,7 @@ def syntaxAnalysis3(vec3):
 
             if(entry == 'ER'):
                 print(f'Error with Syntax{line}')
+                printError(entry, line)
                 return None
             elif(entry == '>'):
                 checkRule = ""
