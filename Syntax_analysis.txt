@@ -1,0 +1,14 @@
+a production used: E -> id
+Finished
+b production used: E -> id
+Finished
+a production used: E -> id
+b production used: E -> id
+6 production used: E -> id
+7 production used: E -> id
+5 production used: E -> id
+E-E Production used: E -> E - E
+E/E Production used: E -> E / E
+E*E Production used: E -> E * E
+E+E Production used: E -> E + E
+Finished

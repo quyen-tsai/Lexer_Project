@@ -506,7 +506,7 @@ def simp_table(vec3,memory_add):
     for x in vec3:
         if not x:
             continue
-        elif len(x) < 1:
+        elif len(x) < 2:
             print(f"Error on line {line}, invalid syntax")
             return False
         elif x[0] == '{' or x[0] == '}'or x[0] == 'if'or x[0] == 'else'or x[0] == 'endif':
@@ -561,25 +561,42 @@ def simp_table(vec3,memory_add):
         line+=1
     sys.stdout = orig_stdout
     f2.close()
+    
+    orig_stdout = sys.stdout
+    f1 = open('symbol_table.txt', 'w')
+    sys.stdout = f1
     print("Symbol Table")
     print("%-15s %-15s %s" % ('Identifier', "MemoryLocation", 'Type'))
     for x in lib4:
         print("%-15s %-15s %s" % (x, str(memory_add), lib4[x]))
         memory_add += 1
+    sys.stdout = orig_stdout
+    f1.close()
     return True
 
-parsingTable1 = ['+','*','-','=','id', 'Key','$']
+parsingTable1 = ['+','*','/','-','=','id', 'Key','$']
 parsingTable2 = [
-    ['>','<','>','ER','<','ER','>'],
-    ['>','>','>','ER','<','ER','>'],
-    ['>','<','>','ER','<','ER','>'],
-    ['>','>','>','>','>','ER','ER'],
-    ['>','>','>','>','ER','ER','>'],
-    ['ER','ER','ER','ER','>','ER','ER'],
-    ['<','<','<','<','<','<','ER'],
+    ['>','<','<','>','E1','<','E1','E1'],        #+
+    ['>','>','>','>','E1','<','E1','>'],        #*
+    ['>','>','>','>','E1','<','E1','>'],        #/
+    ['>','<','<','>','E1','<','E1','>'],        #-
+    ['E2','E2','E2','E2','E2','>','E2','E2'],   #=
+    ['>','>','>','>','>','E3','E3','>'],        #id
+    ['E5','E5','E5','E5','E5','>','E5','E5'],   #Key
+    ['<','<','<','<','<','<','<','>'],         #$
 ]
+# parsingTable1 = ['+','*','-','=','id', 'Key','$']
+# parsingTable2 = [
+#     ['>','<','>','ER','<','ER','>'],
+#     ['>','>','>','ER','<','ER','>'],
+#     ['>','<','>','ER','<','ER','>'],
+#     ['>','>','>','>','>','ER','ER'],
+#     ['>','>','>','>','ER','ER','>'],
+#     ['ER','ER','ER','ER','>','ER','ER'],
+#     ['<','<','<','<','<','<','ER'],
+# ]
 
-errorCodes = []
+errorCodes = ['E1','E2','E3','E4','E5','E6']
 
 def printError(error,line):
     if error == 'E1':
@@ -587,18 +604,20 @@ def printError(error,line):
     elif error == 'E2':
         print(f"Syntax Error on line {line}: missing assignment for variable =")
     elif error == 'E3':
-        print(f"Syntax Error on line {line}: un-executable code")
+        print(f"Syntax Error on line {line}: expected operator after identifier")
     elif error == 'E4':
         print(f"Missing closing Parentheses on line {line}")
     elif error == 'E5':
-        print(f"Uncomputable code on line {line}")
+        print(f"Syntax Error on line {line}: expected identifier after Keyword")
+    elif error == 'E6':
+        print(f"Syntax Error, no Identifier following operator on line {line}")
     
 
 def syntaxAnalysis3(vec3):
     line = 1
-    #orig_stdout = sys.stdout
-    #f2 = open('Syntax_analysis.txt', 'w')
-    #sys.stdout = f2
+    orig_stdout = sys.stdout
+    f2 = open('Syntax_analysis.txt', 'w')
+    sys.stdout = f2
     terminal = ['E', 'EPrime', 'T', 'TPrime', 'F', 'S', 'A', 'D', 'Ty']
     for x in vec3:
         if not x:
@@ -608,15 +627,28 @@ def syntaxAnalysis3(vec3):
         stack = []
         stack.insert(0, '$')
         while not(stack[0] == '$' and x[i] == '$'):
-            if(stack[0] in lib3['id']):
+            #Check Table
+            if((stack[0] in lib3['id']) or (stack[0] in lib3['INT']) or (stack[0] in lib3['FLOAT'])):
                 t = parsingTable1.index('id')
             elif (stack[0] in lib3['Key']):
                 t = parsingTable1.index('Key')
+            elif (stack[0] == '+'):
+                t = parsingTable1.index('+')
+            elif (stack[0] == '-'):
+                t = parsingTable1.index('-')
+            elif (stack[0] == '*'):
+                t = parsingTable1.index('*')
+            elif (stack[0] == '/'):
+                t = parsingTable1.index('/')
+            elif (stack[0] == '='):
+                t = parsingTable1.index('=')
+            elif (stack[0] in terminal):
+                t = parsingTable1.index('$')
             else:
                 t = parsingTable1.index(stack[0])
             if not x:
                 pass
-            elif(x[i] in lib3['id']):
+            elif((x[i] in lib3['id']) or (x[i] in lib3['INT']) or (x[i] in lib3['FLOAT'])):
                 s = parsingTable1.index('id')
             elif (x[i] == '+'):
                 s = parsingTable1.index('+')
@@ -624,6 +656,8 @@ def syntaxAnalysis3(vec3):
                 s = parsingTable1.index('-')
             elif (x[i] == '*'):
                 s = parsingTable1.index('*')
+            elif (x[i] == '/'):
+                s = parsingTable1.index('/')
             elif (x[i] == '='):
                 s = parsingTable1.index('=')
             elif (x[i] in lib3['Key']):
@@ -632,7 +666,8 @@ def syntaxAnalysis3(vec3):
                 s = parsingTable1.index('$')
             entry = parsingTable2[t][s]
 
-            if(entry == 'ER'):
+            #Error Check
+            if(entry in errorCodes):
                 print(f'Error with Syntax{line}')
                 printError(entry, line)
                 return None
@@ -645,17 +680,36 @@ def syntaxAnalysis3(vec3):
                     else:
                         checkRule += char
                 syntaxCheck(stack, checkRule)
+                if((stack[0] == 'E') and (x[i] == '$') and (len(stack) == 2)):
+                    print("Finished")
+                    stack.pop(0)
             else:
-                if '<' not in stack:
-                    stack.insert(len(stack) - 2, entry)
+                if x[i] in lib3['OP']:
+                    stack.insert(1, entry)
                     stack.insert(0, x[i])
                 else:
                     stack.insert(0, entry)
                     stack.insert(0, x[i])
-                i += 1
+                if(x[i] != '$'):
+                    i += 1
 
 def syntaxCheck(stack, checkRule):
-    pass
+    if ((checkRule in lib3['id']) or (checkRule in lib3['INT']) or (checkRule in lib3['FLOAT'])):
+        print(f'{checkRule} production used: E -> id')
+        stack.insert(0, 'E')
+    elif checkRule == 'E+E':
+        print(f'{checkRule} Production used: E -> E + E')
+        stack.insert(0, 'E')
+    elif checkRule == 'E-E':
+        print(f'{checkRule} Production used: E -> E - E')
+        stack.insert(0, 'E')
+    elif checkRule == 'E/E':
+        print(f'{checkRule} Production used: E -> E / E')
+        stack.insert(0, 'E')
+    elif checkRule == 'E*E':
+        print(f'{checkRule} Production used: E -> E * E')
+        stack.insert(0, 'E')
+    
 
 if __name__ == "__main__":
     #filename = input("Please enter File path:")
@@ -665,9 +719,6 @@ if __name__ == "__main__":
     print(lib3)
     print(vec3)
     clear = simp_table(vec3,memory_add)
-
+    #syntaxAnalysis3(vec3)
     if(clear):
         syntaxAnalysis3(vec3)
-
-
-

@@ -1,0 +1,4 @@
+Symbol Table
+Identifier      MemoryLocation  Type
+a               5000            int
+b               5001            int
